@@ -53,7 +53,7 @@ public struct CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftUI.Vie
         self.placeholder = placeholder
     }
     
-    public var body: some View {
+    @ViewBuilder public var body: some View {
         
         //  first intializer used
         if let c = content {
