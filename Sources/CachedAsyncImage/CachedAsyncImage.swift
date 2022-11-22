@@ -71,9 +71,7 @@ public struct CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftUI.Vie
             if let image = ImageCache[url] {
                 c(image)
             } else {
-                AsyncImage(url: url, scale: scale, content: { i in
-                    cacheAndRender(img: i)
-                }, placeholder: p)
+                AsyncImage(url: url, scale: scale, content: c, placeholder: p)
             }
         }
     }
