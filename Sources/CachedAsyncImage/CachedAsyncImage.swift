@@ -16,7 +16,7 @@ public final class CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftU
     private let transaction: Transaction
     private let content: (AsyncImagePhase) -> Content
     
-    init(
+    public init(
         url: URL,
         scale: CGFloat = 1.0,
         transaction: Transaction,
@@ -38,7 +38,7 @@ public final class CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftU
         }
     }
     
-    func cacheAndRender(phase: AsyncImagePhase) -> some View {
+    private func cacheAndRender(phase: AsyncImagePhase) -> some View {
         if case .success(let image) = phase {
             ImageCache[url] = image
         }
