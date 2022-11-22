@@ -78,14 +78,14 @@ public struct CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftUI.Vie
         }
     }
     
-    private func cacheAndRender(phase: AsyncImagePhase) -> some View {
+    private func cacheAndRender(phase: AsyncImagePhase) -> Content {
         if case .success(let image) = phase {
             ImageCache[url] = image
         }
         return content!(phase)
     }
     
-    private func cacheAndRender(img: Image) -> some View {
+    private func cacheAndRender(img: Image) -> Content {
         ImageCache[url] = img
         return contentImage!(img)
     }
