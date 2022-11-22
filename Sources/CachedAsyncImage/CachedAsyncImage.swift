@@ -14,15 +14,15 @@ public struct CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftUI.Vie
     private let url: URL!
     private let scale: CGFloat
     private let transaction: Transaction
-    private var content: ((AsyncImagePhase) -> Content)? = nil
-    private var contentImage: ((Image) -> Content)? = nil
+    private var content: ((AsyncImagePhase) -> AnyView)? = nil
+    private var contentImage: ((Image) -> AnyView)? = nil
     private var placeholder: (() -> Content)? = nil
     
     public init(
         url: URL,
         scale: CGFloat = 1.0,
         transaction: Transaction = Transaction(),
-        @ViewBuilder content: @escaping (AsyncImagePhase) -> Content
+        @ViewBuilder content: @escaping (AsyncImagePhase) -> AnyView
     ) {
         self.url = url
         self.scale = scale
@@ -32,7 +32,7 @@ public struct CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftUI.Vie
     
     public init(
         url: URL?,
-        @ViewBuilder content: @escaping (AsyncImagePhase) -> Content
+        @ViewBuilder content: @escaping (AsyncImagePhase) -> AnyView
     ) {
         self.url = url
         self.scale = 1.0
@@ -43,7 +43,7 @@ public struct CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftUI.Vie
     public init(
         url: URL?,
         scale: CGFloat = 1.0,
-        @ViewBuilder content: @escaping (Image) -> Content,
+        @ViewBuilder content: @escaping (Image) -> AnyView,
         @ViewBuilder placeholder: @escaping () -> Content
     ) {
         self.url = url
@@ -78,14 +78,14 @@ public struct CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftUI.Vie
         }
     }
     
-    private func cacheAndRender(phase: AsyncImagePhase) -> Content {
+    private func cacheAndRender(phase: AsyncImagePhase) -> AnyView {
         if case .success(let image) = phase {
             ImageCache[url] = image
         }
         return content!(phase)
     }
     
-    private func cacheAndRender(img: Image) -> Content {
+    private func cacheAndRender(img: Image) -> AnyView {
         ImageCache[url] = img
         return contentImage!(img)
     }
