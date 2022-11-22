@@ -19,7 +19,7 @@ public final class CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftU
     public init(
         url: URL,
         scale: CGFloat = 1.0,
-        transaction: Transaction,
+        transaction: Transaction = Transaction(),
         @ViewBuilder content: @escaping (AsyncImagePhase) -> Content
     ) {
         self.url = url
