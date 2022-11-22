@@ -43,8 +43,8 @@ public struct CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftUI.Vie
     public init(
         url: URL?,
         scale: CGFloat = 1.0,
-        content: @escaping (Image) -> Content,
-        placeholder: @escaping () -> Content
+        @ViewBuilder content: @escaping (Image) -> Content,
+        @ViewBuilder placeholder: @escaping () -> Content
     ) {
         self.url = url
         self.scale = 1.0
