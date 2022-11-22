@@ -16,7 +16,7 @@ public final class CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftU
     private let transaction: Transaction
     private let content: (AsyncImagePhase) -> Content
     
-    internal init(
+    init(
         url: URL,
         scale: CGFloat = 1.0,
         transaction: Transaction,
