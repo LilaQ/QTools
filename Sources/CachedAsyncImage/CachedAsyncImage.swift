@@ -9,7 +9,7 @@ import SwiftUI
 
 @available(iOS 15.0, *)
 @available(macOS 12.0, *)
-public final class CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftUI.View {
+public struct CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftUI.View {
 
     private let url: URL
     private let scale: CGFloat
