@@ -24,5 +24,7 @@ let package = Package(
         .testTarget(
             name: "QToolsTests",
             dependencies: ["QTools"]),
+        
+        .target(name: "CachedAsyncImage"),
     ]
 )
