@@ -9,7 +9,7 @@ import SwiftUI
 
 @available(iOS 15.0, *)
 @available(macOS 12.0, *)
-final class CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftUI.View {
+public final class CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftUI.View {
 
     private let url: URL
     private let scale: CGFloat
@@ -28,7 +28,7 @@ final class CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftUI.View 
         self.content = content
     }
     
-    var body: some View {
+    public var body: some View {
         if let image = ImageCache[url] {
             self.content(.success(image))
         } else {
