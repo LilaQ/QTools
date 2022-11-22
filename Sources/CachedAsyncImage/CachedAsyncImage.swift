@@ -11,7 +11,7 @@ import SwiftUI
 @available(macOS 12.0, *)
 public struct CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftUI.View {
 
-    private let url: URL
+    private let url: URL!
     private let scale: CGFloat
     private let transaction: Transaction
     private let content: (AsyncImagePhase) -> Content
@@ -25,6 +25,16 @@ public struct CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftUI.Vie
         self.url = url
         self.scale = scale
         self.transaction = transaction
+        self.content = content
+    }
+    
+    public init(
+        url: URL?,
+        @ViewBuilder content: @escaping (AsyncImagePhase) -> Content
+    ) {
+        self.url = url
+        self.scale = 1.0
+        self.transaction = Transaction()
         self.content = content
     }
     
