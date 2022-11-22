@@ -14,7 +14,9 @@ public struct CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftUI.Vie
     private let url: URL!
     private let scale: CGFloat
     private let transaction: Transaction
-    private let content: (AsyncImagePhase) -> Content
+    private var content: ((AsyncImagePhase) -> Content)? = nil
+    private var contentImage: ((Image) -> Content)? = nil
+    private var placeholder: (() -> Content)? = nil
     
     public init(
         url: URL,
@@ -38,12 +40,40 @@ public struct CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftUI.Vie
         self.content = content
     }
     
+    public init(
+        url: URL?,
+        scale: CGFloat = 1.0,
+        content: @escaping (Image) -> Content,
+        placeholder: @escaping () -> Content
+    ) {
+        self.url = url
+        self.scale = 1.0
+        self.transaction = Transaction()
+        self.contentImage = content
+        self.placeholder = placeholder
+    }
+    
     public var body: some View {
-        if let image = ImageCache[url] {
-            self.content(.success(image))
-        } else {
-            AsyncImage(url: url, scale: scale, transaction: transaction) { phase in
-                self.cacheAndRender(phase: phase)
+        
+        //  first intializer used
+        if let c = content {
+            if let image = ImageCache[url] {
+                c(.success(image))
+            } else {
+                AsyncImage(url: url, scale: scale, transaction: transaction) { phase in
+                    self.cacheAndRender(phase: phase)
+                }
+            }
+        }
+        
+        //  initializer with placeholder
+        else if let c = contentImage, let p = placeholder {
+            if let image = ImageCache[url] {
+                c(image)
+            } else {
+                AsyncImage(url: url, scale: scale, content: { i in
+                    cacheAndRender(img: i)
+                }, placeholder: p)
             }
         }
     }
@@ -52,7 +82,12 @@ public struct CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftUI.Vie
         if case .success(let image) = phase {
             ImageCache[url] = image
         }
-        return content(phase)
+        return content!(phase)
+    }
+    
+    private func cacheAndRender(img: Image) -> some View {
+        ImageCache[url] = img
+        return contentImage!(img)
     }
 }
 
