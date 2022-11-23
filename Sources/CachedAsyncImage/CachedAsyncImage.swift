@@ -9,21 +9,21 @@ import SwiftUI
 
 @available(iOS 15.0, *)
 @available(macOS 12.0, *)
-public struct CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftUI.View {
+public struct CachedAsyncImage<Content: View, Placeholder: View>: SwiftUI.View {
 
     private let url: URL!
     private let scale: CGFloat
     private let transaction: Transaction
     private var content: ((AsyncImagePhase) -> Content)? = nil
     private var contentImage: ((Image) -> Content)? = nil
-    private var placeholder: (() -> Content)? = nil
+    private var placeholder: (() -> Placeholder)? = nil
     
     public init(
         url: URL,
         scale: CGFloat = 1.0,
         transaction: Transaction = Transaction(),
         @ViewBuilder content: @escaping (AsyncImagePhase) -> Content
-    ) {
+    ) where Placeholder == EmptyView {
         self.url = url
         self.scale = scale
         self.transaction = transaction
@@ -33,7 +33,7 @@ public struct CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftUI.Vie
     public init(
         url: URL?,
         @ViewBuilder content: @escaping (AsyncImagePhase) -> Content
-    ) {
+    ) where Placeholder == EmptyView {
         self.url = url
         self.scale = 1.0
         self.transaction = Transaction()
@@ -44,7 +44,7 @@ public struct CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftUI.Vie
         url: URL?,
         scale: CGFloat = 1.0,
         @ViewBuilder content: @escaping (Image) -> Content,
-        @ViewBuilder placeholder: @escaping () -> Content
+        @ViewBuilder placeholder: @escaping () -> Placeholder
     ) {
         self.url = url
         self.scale = 1.0
@@ -53,7 +53,7 @@ public struct CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftUI.Vie
         self.placeholder = placeholder
     }
     
-    @ViewBuilder public var body: some View {
+    public var body: some View {
         
         //  first intializer used
         if let c = content {
@@ -69,7 +69,7 @@ public struct CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftUI.Vie
         //  initializer with placeholder
         else if let c = contentImage, let p = placeholder {
             if let image = ImageCache[url] {
-                c(image)
+                cacheAndRender(img: image)
             } else {
                 AsyncImage(url: url, scale: scale, content: c, placeholder: p)
             }
@@ -83,9 +83,10 @@ public struct CachedAsyncImage<Content>: SwiftUI.View where Content: SwiftUI.Vie
         return content!(phase)
     }
     
+    @ViewBuilder
     private func cacheAndRender(img: Image) -> some View {
-        ImageCache[url] = img
-        return contentImage!(img)
+//        ImageCache[url] = img
+        contentImage!(img)
     }
 }
 
