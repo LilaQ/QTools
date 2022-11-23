@@ -81,6 +81,7 @@ fileprivate class ImageCache {
 }
 
 @available(iOS 15.0, *)
+@available(macOS 12.0, *)
 extension CachedAsyncImage {
     public init(
         url: URL?,
