@@ -30,29 +30,6 @@ public struct CachedAsyncImage<Content: View, Placeholder: View>: SwiftUI.View {
         self.content = content
     }
     
-    public init(
-        url: URL?,
-        @ViewBuilder content: @escaping (AsyncImagePhase) -> Content
-    ) where Placeholder == EmptyView {
-        self.url = url
-        self.scale = 1.0
-        self.transaction = Transaction()
-        self.content = content
-    }
-    
-    public init(
-        url: URL?,
-        scale: CGFloat = 1.0,
-        @ViewBuilder content: @escaping (Image) -> Content,
-        @ViewBuilder placeholder: @escaping () -> Placeholder
-    ) {
-        self.url = url
-        self.scale = 1.0
-        self.transaction = Transaction()
-        self.contentImage = content
-        self.placeholder = placeholder
-    }
-    
     public var body: some View {
         
         //  first intializer used
@@ -83,10 +60,9 @@ public struct CachedAsyncImage<Content: View, Placeholder: View>: SwiftUI.View {
         return content!(phase)
     }
     
-    @ViewBuilder
     private func cacheAndRender(img: Image) -> some View {
-//        ImageCache[url] = img
-        contentImage!(img)
+        ImageCache[url] = img
+        return contentImage!(img)
     }
 }
 
@@ -101,5 +77,31 @@ fileprivate class ImageCache {
         set {
             cache[url] = newValue
         }
+    }
+}
+
+@available(iOS 15.0, *)
+extension CachedAsyncImage {
+    public init(
+        url: URL?,
+        @ViewBuilder content: @escaping (AsyncImagePhase) -> Content
+    ) where Placeholder == EmptyView {
+        self.url = url
+        self.scale = 1.0
+        self.transaction = Transaction()
+        self.content = content
+    }
+    
+    public init(
+        url: URL?,
+        scale: CGFloat = 1.0,
+        @ViewBuilder content: @escaping (Image) -> Content,
+        @ViewBuilder placeholder: @escaping () -> Placeholder
+    ) {
+        self.url = url
+        self.scale = 1.0
+        self.transaction = Transaction()
+        self.contentImage = content
+        self.placeholder = placeholder
     }
 }
