@@ -21,6 +21,7 @@ public struct CachedAsyncImage<Content: View, Placeholder: View>: SwiftUI.View {
     public init(
         url: URL,
         scale: CGFloat = 1.0,
+        rescaleToWidth: CGFloat? = nil,
         transaction: Transaction = Transaction(),
         @ViewBuilder content: @escaping (AsyncImagePhase) -> Content
     ) where Placeholder == EmptyView {
@@ -84,7 +85,7 @@ public struct CachedAsyncImage<Content: View, Placeholder: View>: SwiftUI.View {
 @available(macOS 10.15, *)
 fileprivate class PersistentImageCache {
     static private var cache: NSCache<NSString, NSData> = NSCache<NSString, NSData>()
-    static subscript(url: URL) -> Image? {
+    static subscript(url: URL, resizeWidth: CGFloat? = nil) -> Image? {
         get {
             guard let data = cache.object(forKey: url.absoluteString as NSString),
                   let image = NSImage(data: data as Data)
@@ -92,9 +93,29 @@ fileprivate class PersistentImageCache {
             return Image(nsImage: image)
         }
         set {
-            guard let data = NSData(contentsOf: url) else { return }
+            guard var img = NSImage(contentsOf: url) else { return }
+            var data: NSData? = nil
+            if let w = resizeWidth {
+                let h = Int((img.size.width / w) * img.size.height)
+                let w = Int(w)
+                img = resize(image: img, w: w, h: h)
+                guard let d = img.tiffRepresentation else { return }
+                data = NSData(data: d)
+                print("Storing resized to w: \(w), h: \(h)")
+            }
+            guard let data = data else { return }
             cache.setObject(data, forKey: url.absoluteString as NSString)
         }
+    }
+    
+    private static func resize(image: NSImage, w: Int, h: Int) -> NSImage {
+        var destSize = NSMakeSize(CGFloat(w), CGFloat(h))
+        var newImage = NSImage(size: destSize)
+        newImage.lockFocus()
+        image.draw(in: NSMakeRect(0, 0, destSize.width, destSize.height), from: NSMakeRect(0, 0, image.size.width, image.size.height), operation: NSCompositingOperation.sourceOver, fraction: CGFloat(1))
+        newImage.unlockFocus()
+        newImage.size = destSize
+        return NSImage(data: newImage.tiffRepresentation!)!
     }
 }
 
