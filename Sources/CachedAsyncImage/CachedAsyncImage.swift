@@ -34,7 +34,7 @@ public struct CachedAsyncImage<Content: View, Placeholder: View>: SwiftUI.View {
         
         //  first intializer used
         if let c = content {
-            if let image = ImageCache[url] {
+            if let image = PersistentImageCache[url] {
                 c(.success(image))
             } else {
                 AsyncImage(url: url, scale: scale, transaction: transaction) { phase in
@@ -45,7 +45,7 @@ public struct CachedAsyncImage<Content: View, Placeholder: View>: SwiftUI.View {
         
         //  initializer with placeholder
         else if let c = contentImage, let p = placeholder {
-            if let image = ImageCache[url] {
+            if let image = PersistentImageCache[url] {
                 cacheAndRender(img: image)
             } else {
                 AsyncImage(url: url, scale: scale, content: c, placeholder: p)
@@ -55,27 +55,47 @@ public struct CachedAsyncImage<Content: View, Placeholder: View>: SwiftUI.View {
     
     private func cacheAndRender(phase: AsyncImagePhase) -> some View {
         if case .success(let image) = phase {
-            ImageCache[url] = image
+            PersistentImageCache[url] = image
         }
         return content!(phase)
     }
     
     private func cacheAndRender(img: Image) -> some View {
-        ImageCache[url] = img
+        PersistentImageCache[url] = img
         return contentImage!(img)
     }
 }
 
+//@available(iOS 13.0, *)
+//@available(macOS 10.15, *)
+//fileprivate class ImageCache {
+//    static private var cache: [URL: Image] = [:]
+//    static subscript(url: URL) -> Image? {
+//        get {
+//            cache[url]
+//        }
+//        set {
+//            cache[url] = newValue
+//        }
+//    }
+//}
+
 @available(iOS 13.0, *)
 @available(macOS 10.15, *)
-fileprivate class ImageCache {
-    static private var cache: [URL: Image] = [:]
+fileprivate class PersistentImageCache {
+    static private var cache: NSCache<NSString, NSData> = NSCache<NSString, NSData>()
     static subscript(url: URL) -> Image? {
         get {
-            cache[url]
+            guard let data = cache.object(forKey: url.absoluteString as NSString),
+                  let image = NSImage(data: data as Data)
+            else {
+                return Image("")
+            }
+            return Image(nsImage: image)
         }
         set {
-            cache[url] = newValue
+            guard let data = NSData(contentsOf: url) else { return }
+            cache.setObject(data, forKey: url.absoluteString as NSString)
         }
     }
 }
