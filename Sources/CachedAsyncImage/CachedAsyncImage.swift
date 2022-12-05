@@ -88,9 +88,7 @@ fileprivate class PersistentImageCache {
         get {
             guard let data = cache.object(forKey: url.absoluteString as NSString),
                   let image = NSImage(data: data as Data)
-            else {
-                return Image("")
-            }
+            else { return nil }
             return Image(nsImage: image)
         }
         set {
