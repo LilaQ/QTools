@@ -17,6 +17,7 @@ public struct CachedAsyncImage<Content: View, Placeholder: View>: SwiftUI.View {
     private var content: ((AsyncImagePhase) -> Content)? = nil
     private var contentImage: ((Image) -> Content)? = nil
     private var placeholder: (() -> Placeholder)? = nil
+    private var rescaleToWidth: CGFloat?
     
     public init(
         url: URL,
@@ -29,13 +30,14 @@ public struct CachedAsyncImage<Content: View, Placeholder: View>: SwiftUI.View {
         self.scale = scale
         self.transaction = transaction
         self.content = content
+        self.rescaleToWidth = rescaleToWidth
     }
     
     public var body: some View {
         
         //  first intializer used
         if let c = content {
-            if let image = PersistentImageCache[url] {
+            if let image = PersistentImageCache[url, rescaleToWidth] {
                 c(.success(image))
             } else {
                 AsyncImage(url: url, scale: scale, transaction: transaction) { phase in
@@ -46,7 +48,7 @@ public struct CachedAsyncImage<Content: View, Placeholder: View>: SwiftUI.View {
         
         //  initializer with placeholder
         else if let c = contentImage, let p = placeholder {
-            if let image = PersistentImageCache[url] {
+            if let image = PersistentImageCache[url, rescaleToWidth] {
                 cacheAndRender(img: image)
             } else {
                 AsyncImage(url: url, scale: scale, content: c, placeholder: p)
@@ -56,13 +58,13 @@ public struct CachedAsyncImage<Content: View, Placeholder: View>: SwiftUI.View {
     
     private func cacheAndRender(phase: AsyncImagePhase) -> some View {
         if case .success(let image) = phase {
-            PersistentImageCache[url] = image
+            PersistentImageCache[url, rescaleToWidth] = image
         }
         return content!(phase)
     }
     
     private func cacheAndRender(img: Image) -> some View {
-        PersistentImageCache[url] = img
+        PersistentImageCache[url, rescaleToWidth] = img
         return contentImage!(img)
     }
 }
